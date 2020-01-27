@@ -2,7 +2,7 @@ from assistant.assistant import Assistant, TestAssistant
 from openhab.openhab import OpenHAB
 from genderdeterminator import GenderDeterminator, Case
 
-USER_PREFIX = "Alpha200"
+USER_PREFIX = "kleintody"
 
 UNKNOWN_DEVICE = "Ich habe nicht verstanden, welches Gerät du {} möchtest."
 UNKNOWN_TEMPERATURE = "Die Temperatur {} ist unbekannt."
