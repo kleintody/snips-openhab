@@ -85,7 +85,7 @@ class TestAssistant(unittest.TestCase):
 
         success, message = assistant.callback(
             TestIntentMessage(
-                TestIntent(user_intent("increaseItem")),
+                TestIntent(user_intent("increaseProperty")),
                 TestSlots(dict(
                     property=TestSlot([TestValue("lautstärke")])
                 ))
@@ -103,7 +103,7 @@ class TestAssistant(unittest.TestCase):
 
         success, message = assistant.callback(
             TestIntentMessage(
-                TestIntent(user_intent("increaseItem")),
+                TestIntent(user_intent("increaseProperty")),
                 TestSlots(dict(
                     property=TestSlot([TestValue("helligkeit")]),
                     room=TestSlot([TestValue("esszimmer")])

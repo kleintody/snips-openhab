@@ -24,13 +24,13 @@ Temperatur abfragen
 Wert erhöhen
 ------------
 
-.. literalinclude:: ../../training/increaseItem.txt
+.. literalinclude:: ../../training/increaseProperty.txt
     :language: text
 
 Wert verringern
 ---------------
 
-.. literalinclude:: ../../training/decreaseItem.txt
+.. literalinclude:: ../../training/decreaseProperty.txt
     :language: text
 
 Wiedergabe fortsetzen

@@ -248,7 +248,7 @@ def get_temperature_callback(assistant, intent_message, conf):
 
 
 def increase_decrease_callback(assistant, intent_message, conf):
-    increase = intent_message.intent.intent_name == user_intent("increaseItem")
+    increase = intent_message.intent.intent_name == user_intent("increaseProperty")
 
     spoken_room, room = get_room(intent_message, conf['secret']['room_of_device_default'])
 
@@ -353,8 +353,8 @@ def add_callbacks(assistant):
 
     assistant.add_callback(user_intent("getTemperature"), get_temperature_callback)
 
-    assistant.add_callback(user_intent("increaseItem"), increase_decrease_callback)
-    assistant.add_callback(user_intent("decreaseItem"), increase_decrease_callback)
+    assistant.add_callback(user_intent("increaseProperty"), increase_decrease_callback)
+    assistant.add_callback(user_intent("decreaseProperty"), increase_decrease_callback)
 
     assistant.add_callback(user_intent("setValue"), set_value_callback)
 
