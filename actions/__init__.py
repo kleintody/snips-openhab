@@ -66,9 +66,9 @@ def generate_switch_result_sentence(devices, command):
 def generate_item_open_close_result_sentence(devices, command):
     l_devices = list(devices)
 
-    if command == "OPEN":
+    if command == "UP":
         command_spoken = "geöffnet"
-    elif command == "CLOSE":
+    elif command == "DOWN":
         command_spoken = "geschlossen"
     else:
         command_spoken = ""
@@ -231,6 +231,7 @@ def switch_on_off_callback(assistant, intent_message, conf):
 
     return True, result_sentence
 
+
 def item_open_close_callback(assistant, intent_message, conf):
     devices, spoken_room = get_items_and_room(intent_message)
 
@@ -242,7 +243,7 @@ def item_open_close_callback(assistant, intent_message, conf):
     else:
         room = None
 
-    command = "OPEN" if intent_message.intent.intent_name == user_intent("openItem") else "CLOSE"
+    command = "UP" if intent_message.intent.intent_name == user_intent("openItem") else "DOWN"
 
     if devices is None:
         return False, UNKNOWN_DEVICE.format("öffnen" if command == "OPEN" else "schließen")
@@ -270,6 +271,7 @@ def item_open_close_callback(assistant, intent_message, conf):
     for device in relevant_devices:
         if device.item_type in ("GarageDoor", "Rollershutter"):
             devices.add(device)
+
 #        elif device.item_type == "Group" and device.is_equipment():
 #            for point in device.has_points:
 #                point_item = openhab.items[point]
@@ -421,6 +423,9 @@ def player_callback(assistant, intent_message, conf):
 def add_callbacks(assistant):
     assistant.add_callback(user_intent("switchDeviceOn"), switch_on_off_callback)
     assistant.add_callback(user_intent("switchDeviceOff"), switch_on_off_callback)
+
+    assistant.add_callback(user_intent("openItem"), item_open_close_callback)
+    assistant.add_callback(user_intent("closeItem"), item_open_close_callback)
 
     assistant.add_callback(user_intent("getTemperature"), get_temperature_callback)
 
