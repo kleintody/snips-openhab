@@ -246,6 +246,8 @@ class OpenHAB:
     def send_command_to_devices(self, devices, command):
         for device in devices:
             url = "{0}/rest/items/{1}".format(self.openhab_server_url, device.name)
+            if device.item_type == "GarageDoor":
+                requests.post(url, "STOP")
             requests.post(url, command)
 
     def get_state(self, item):
