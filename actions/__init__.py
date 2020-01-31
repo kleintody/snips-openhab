@@ -83,6 +83,26 @@ def generate_item_open_close_result_sentence(devices, command):
         )
 
 
+def generate_item_up_down_result_sentence(devices, command):
+    l_devices = list(devices)
+
+    if command == "UP":
+        command_spoken = "hoch gemacht"
+    elif command == "DOWN":
+        command_spoken = "runter gemacht"
+    else:
+        command_spoken = ""
+
+    if len(l_devices) == 1:
+        return "Ich habe dir {} {}.".format(gd.get(l_devices[0].description(), Case.ACCUSATIVE), command_spoken)
+    else:
+        return "Ich habe dir {} {}.".format(
+            ", ".join(gd.get(device.description(), Case.ACCUSATIVE) for device in l_devices[:len(l_devices) - 1])
+            + " und " + gd.get(l_devices[len(l_devices) - 1].description(), Case.ACCUSATIVE),
+            command_spoken
+        )
+
+
 def get_room_for_current_site(intent_message, default_room):
     if intent_message.site_id == "default":
         return default_room
@@ -285,6 +305,59 @@ def item_open_close_callback(assistant, intent_message, conf):
     return True, result_sentence
 
 
+def item_up_down_callback(assistant, intent_message, conf):
+    devices, spoken_room = get_items_and_room(intent_message)
+
+    if spoken_room is not None:
+        room = openhab.get_location(spoken_room)
+
+        if room is None:
+            return False, "Ich habe keinen Ort mit der Bezeichnung {location} gefunden.".format(location=spoken_room)
+    else:
+        room = None
+
+    command = "UP" if intent_message.intent.intent_name == user_intent("moveItemUp") else "DOWN"
+
+    if devices is None:
+        return False, UNKNOWN_DEVICE.format("hoch machen" if command == "OPEN" else "runter machen")
+
+    relevant_devices = openhab.get_relevant_items(devices, room)
+
+    # The user is allowed to ommit the room if the request matches exactly one device in the users home (e.g.
+    # if there is only one tv) or if the request contains only devices of the current room
+    if room is None and len(relevant_devices) > 1:
+        print("Request without room matched more than one item. Requesting again with current room.")
+
+        spoken_room = get_room_for_current_site(intent_message, conf['secret']['room_of_device_default'])
+        room = openhab.get_location(spoken_room)
+
+        relevant_devices = openhab.get_relevant_items(devices, room)
+
+        if len(relevant_devices) == 0:
+            return False, "Deine Anfrage war nicht eindeutig genug"
+
+    if len(relevant_devices) == 0:
+        return False, "Ich habe kein Gerät gefunden, welches zu deiner Anfrage passt"
+
+    devices = set()
+
+    for device in relevant_devices:
+        if device.item_type in ("GarageDoor", "Rollershutter"):
+            devices.add(device)
+
+#        elif device.item_type == "Group" and device.is_equipment():
+#            for point in device.has_points:
+#                point_item = openhab.items[point]
+#
+#                if point_item.semantics == "Point_Control_Switch":
+#                    devices.add(point_item)
+
+    openhab.send_command_to_devices(devices, command)
+    result_sentence = generate_item_open_close_result_sentence(relevant_devices, command)
+
+    return True, result_sentence
+
+
 def get_room(intent_message, default_room):
     if len(intent_message.slots.room) > 0:
         spoken_room = intent_message.slots.room.first().value
@@ -426,6 +499,9 @@ def add_callbacks(assistant):
 
     assistant.add_callback(user_intent("openItem"), item_open_close_callback)
     assistant.add_callback(user_intent("closeItem"), item_open_close_callback)
+
+    assistant.add_callback(user_intent("moveItemUp"), item_up_down_callback)
+    assistant.add_callback(user_intent("moveItemDown"), item_up_down_callback)
 
     assistant.add_callback(user_intent("getTemperature"), get_temperature_callback)
 
