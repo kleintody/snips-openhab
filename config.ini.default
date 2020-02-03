@@ -1,6 +1,7 @@
 [secret]
 openhab_server_url=http://localhost:8080
-room_of_device_default=
+siteid2room_mapping={ "master":"Wohnzimmer", "satellite1": "WC" }
+default_room=Wohnzimmer
 sound_feedback=off
 
 [static]

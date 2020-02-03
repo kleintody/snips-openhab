@@ -1,6 +1,7 @@
 from assistant.assistant import Assistant, TestAssistant
 from openhab.openhab import OpenHAB
 from genderdeterminator import GenderDeterminator, Case
+from ast import literal_eval
 
 USER_PREFIX = "kleintody"
 
@@ -103,11 +104,11 @@ def generate_item_up_down_result_sentence(devices, command):
         )
 
 
-def get_room_for_current_site(intent_message, default_room):
-    if intent_message.site_id == "default":
+def get_room_for_current_site(intent_message, siteid2room_mapping, default_room):
+    if intent_message.site_id not in siteid2room_mapping:
         return default_room
     else:
-        return intent_message.site_id
+        return siteid2room_mapping[intent_message.site_id]
 
 
 def what_do_you_know_about_callback(assistant, intent_message, conf):
@@ -203,6 +204,9 @@ def repeat_last_callback(assistant, intent_message, conf):
 def switch_on_off_callback(assistant, intent_message, conf):
     devices, spoken_room = get_items_and_room(intent_message)
 
+    siteid2room_mapping = literal_eval(conf['secret']['siteid2room_mapping'])
+    default_room = conf['secret']['default_room']
+
     if spoken_room is not None:
         room = openhab.get_location(spoken_room)
 
@@ -223,7 +227,7 @@ def switch_on_off_callback(assistant, intent_message, conf):
     if room is None and len(relevant_devices) > 1:
         print("Request without room matched more than one item. Requesting again with current room.")
 
-        spoken_room = get_room_for_current_site(intent_message, conf['secret']['room_of_device_default'])
+        spoken_room = get_room_for_current_site(intent_message, siteid2room_mapping, default_room)
         room = openhab.get_location(spoken_room)
 
         relevant_devices = openhab.get_relevant_items(devices, room)
@@ -255,6 +259,9 @@ def switch_on_off_callback(assistant, intent_message, conf):
 def item_open_close_callback(assistant, intent_message, conf):
     devices, spoken_room = get_items_and_room(intent_message)
 
+    siteid2room_mapping = literal_eval(conf['secret']['siteid2room_mapping'])
+    default_room = conf['secret']['default_room']
+
     if spoken_room is not None:
         room = openhab.get_location(spoken_room)
 
@@ -275,7 +282,7 @@ def item_open_close_callback(assistant, intent_message, conf):
     if room is None and len(relevant_devices) > 1:
         print("Request without room matched more than one item. Requesting again with current room.")
 
-        spoken_room = get_room_for_current_site(intent_message, conf['secret']['room_of_device_default'])
+        spoken_room = get_room_for_current_site(intent_message, siteid2room_mapping, default_room)
         room = openhab.get_location(spoken_room)
 
         relevant_devices = openhab.get_relevant_items(devices, room)
@@ -308,6 +315,9 @@ def item_open_close_callback(assistant, intent_message, conf):
 def item_up_down_callback(assistant, intent_message, conf):
     devices, spoken_room = get_items_and_room(intent_message)
 
+    siteid2room_mapping = literal_eval(conf['secret']['siteid2room_mapping'])
+    default_room = conf['secret']['default_room']
+
     if spoken_room is not None:
         room = openhab.get_location(spoken_room)
 
@@ -328,7 +338,7 @@ def item_up_down_callback(assistant, intent_message, conf):
     if room is None and len(relevant_devices) > 1:
         print("Request without room matched more than one item. Requesting again with current room.")
 
-        spoken_room = get_room_for_current_site(intent_message, conf['secret']['room_of_device_default'])
+        spoken_room = get_room_for_current_site(intent_message, siteid2room_mapping, default_room)
         room = openhab.get_location(spoken_room)
 
         relevant_devices = openhab.get_relevant_items(devices, room)
@@ -358,11 +368,11 @@ def item_up_down_callback(assistant, intent_message, conf):
     return True, result_sentence
 
 
-def get_room(intent_message, default_room):
+def get_room(intent_message, siteid2room_mapping, default_room):
     if len(intent_message.slots.room) > 0:
         spoken_room = intent_message.slots.room.first().value
     else:
-        spoken_room = get_room_for_current_site(intent_message, default_room)
+        spoken_room = get_room_for_current_site(intent_message, siteid2room_mapping, default_room)
 
     room = openhab.get_location(spoken_room)
 
@@ -371,8 +381,10 @@ def get_room(intent_message, default_room):
 
 def get_temperature_callback(assistant, intent_message, conf):
     # TODO: Generalize this case as get property
+    siteid2room_mapping = literal_eval(conf['secret']['siteid2room_mapping'])
+    default_room = conf['secret']['default_room']
 
-    spoken_room, room = get_room(intent_message, conf['secret']['room_of_device_default'])
+    spoken_room, room = get_room(intent_message, siteid2room_mapping, default_room)
 
     if room is None:
         return False, "Ich habe keinen Ort mit der Bezeichnung {location} gefunden".format(location=spoken_room)
@@ -396,7 +408,10 @@ def get_temperature_callback(assistant, intent_message, conf):
 def increase_decrease_callback(assistant, intent_message, conf):
     increase = intent_message.intent.intent_name == user_intent("increaseProperty")
 
-    spoken_room, room = get_room(intent_message, conf['secret']['room_of_device_default'])
+    siteid2room_mapping = literal_eval(conf['secret']['siteid2room_mapping'])
+    default_room = conf['secret']['default_room']
+
+    spoken_room, room = get_room(intent_message, siteid2room_mapping, default_room)
 
     if room is None:
         return False, "Ich habe keinen Ort mit der Bezeichnung {location} gefunden.".format(location=spoken_room)
@@ -464,7 +479,10 @@ def set_value_callback(assistant, intent_message, conf):
 
 
 def player_callback(assistant, intent_message, conf):
-    spoken_room, room = get_room(intent_message, conf['secret']['room_of_device_default'])
+    siteid2room_mapping = literal_eval(conf['secret']['siteid2room_mapping'])
+    default_room = conf['secret']['default_room']
+
+    spoken_room, room = get_room(intent_message, siteid2room_mapping, default_room)
 
     if room is None:
         return False, "Ich habe keinen Ort mit der Bezeichnung {location} gefunden".format(location=spoken_room)

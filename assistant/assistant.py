@@ -56,7 +56,9 @@ class TestAssistant:
     def __init__(self):
         self.intents = {}
         self.conf = dict(
-            secret=dict(room_of_device_default='schlafzimmer')
+            secret=dict(default_room='Wohnzimmer',
+                siteid2room_mapping='{ "default": "Wohnzimmer", "satellite": "Schlafzimmer" }'
+            )
         )
 
     def add_callback(self, intent_name, callback):
@@ -112,8 +114,10 @@ class Assistant:
 
         if 'OPENHAB_SERVER_URL' in environ:
             self.conf['secret']['openhab_server_url'] = environ.get('OPENHAB_SERVER_URL')
-        if 'OPENHAB_ROOM_OF_DEVICE_DEFAULT' in environ:
-            self.conf['secret']['room_of_device_default'] = environ.get('OPENHAB_ROOM_OF_DEVICE_DEFAULT')
+        if 'OPENHAB_DEFAULT_ROOM' in environ:
+            self.conf['secret']['default_room'] = environ.get('OPENHAB_DEFAULT_ROOM')
+        if 'OPENHAB_SITEID2ROOM_MAPPING' in environ:
+            self.conf['secret']['siteid2room_mapping'] = environ.get('OPENHAB_SITEID2ROOM_MAPPING')
         if 'OPENHAB_SOUND_FEEDBACK' in environ:
             self.conf['secret']['sound_feedback'] = environ.get('OPENHAB_SOUND_FEEDBACK')
 
