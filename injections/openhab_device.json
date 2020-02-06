@@ -1,0 +1,17 @@
+{
+    "operations": [
+        [
+            "add",
+            {
+                "openhab/device" : [
+                    "Esstischlampe",
+		    "Spüllampe",
+		    "Spülenlampe",
+		    "Abwaschlampe",
+		    "Herdlampe",
+		    "Kochlampe"
+                ]
+            }
+        ]
+    ]
+}
